@@ -5,8 +5,10 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.example.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.*;
 import org.testcontainers.cassandra.CassandraContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
@@ -43,8 +45,10 @@ class UserAuditServiceTest {
     session.execute("TRUNCATE my_keyspace.user_audit");
   }
 
+
+
   @Test
-  void testInsertUserAction_Positive() {
+  void testInsertUserActionPositive() {
     UserAudit userAudit = UserAudit.builder()
         .id(UUID.randomUUID())
         .eventTime(Instant.now())
@@ -56,7 +60,7 @@ class UserAuditServiceTest {
   }
 
   @Test
-  void testInsertUserAction_Negative() {
+  void testInsertUserActionNegative() {
     UserAudit userAudit = UserAudit.builder()
         .id(null)
         .eventTime(Instant.now())
@@ -68,7 +72,7 @@ class UserAuditServiceTest {
   }
 
   @Test
-  void testGetUserAudits_Positive() {
+  void testGetUserAuditsPositive() {
     UUID userId = UUID.randomUUID();
     UserAudit userAudit = UserAudit.builder()
         .id(userId)
