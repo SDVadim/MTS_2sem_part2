@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.*;
 import org.springframework.test.context.junit4.*;
 import org.testcontainers.cassandra.CassandraContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -31,8 +32,7 @@ class UserAuditServiceTest {
 
   @Container
   @ServiceConnection
-  private static final CassandraContainer cassandraContainer = new CassandraContainer("cassandra:5.0.3")
-      .waitingFor(Wait.forListeningPort()) ;
+  private static final CassandraContainer cassandraContainer = new CassandraContainer("cassandra:5.0.3").withExposedPorts(9042);
 
   @Autowired
   private CqlSession session;
@@ -46,6 +46,14 @@ class UserAuditServiceTest {
   }
 
 
+  @DynamicPropertySource
+  static void cassandraProperties(DynamicPropertyRegistry registry) {
+    String contactPoint =
+        cassandraContainer.getHost() + ":" + cassandraContainer.getMappedPort(9042);
+    registry.add("spring.cassandra.contact-points", () -> contactPoint);
+    registry.add("spring.cassandra.local-datacenter", () -> "datacenter1");
+    registry.add("spring.cassandra.keyspace-name", () -> "my_keyspace");
+  }
 
   @Test
   void testInsertUserActionPositive() {
