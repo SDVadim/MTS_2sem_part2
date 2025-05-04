@@ -1,38 +1,36 @@
 package com.example.service;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
-import com.example.entity.*;
+import com.datastax.oss.driver.api.core.servererrors.*;
+import com.example.entity.UserAudit;
+import com.example.entity.Action;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.*;
-import org.springframework.test.context.junit4.*;
-import org.testcontainers.cassandra.CassandraContainer;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Testcontainers
 class UserAuditServiceTest {
 
   @Container
-  @ServiceConnection
-  private static final CassandraContainer cassandraContainer = new CassandraContainer("cassandra:5.0.3").withExposedPorts(9042);
+  private static final CassandraContainer<?> cassandraContainer =
+      new CassandraContainer<>("cassandra:4.1") // Используем стабильную версию
+          .withExposedPorts(9042)
+          .waitingFor(Wait.forLogMessage(".*Startup complete.*\\n", 1));
 
   @Autowired
   private CqlSession session;
@@ -40,19 +38,17 @@ class UserAuditServiceTest {
   @Autowired
   private UserAuditService userAuditService;
 
-  @BeforeEach
-  void clearContainer() {
-    session.execute("TRUNCATE my_keyspace.user_audit");
-  }
-
-
   @DynamicPropertySource
   static void cassandraProperties(DynamicPropertyRegistry registry) {
-    String contactPoint =
-        cassandraContainer.getHost() + ":" + cassandraContainer.getMappedPort(9042);
-    registry.add("spring.cassandra.contact-points", () -> contactPoint);
-    registry.add("spring.cassandra.local-datacenter", () -> "datacenter1");
-    registry.add("spring.cassandra.keyspace-name", () -> "my_keyspace");
+    registry.add("spring.data.cassandra.contact-points", cassandraContainer::getHost);
+    registry.add("spring.data.cassandra.port", () -> cassandraContainer.getMappedPort(9042));
+    registry.add("spring.data.cassandra.local-datacenter", () -> "datacenter1");
+    registry.add("spring.data.cassandra.keyspace-name", () -> "my_keyspace");
+  }
+
+  @BeforeEach
+  void clearData() {
+    session.execute("TRUNCATE my_keyspace.user_audit");
   }
 
   @Test
@@ -76,7 +72,8 @@ class UserAuditServiceTest {
         .eventDetails("Test insert action")
         .build();
 
-    assertThrows(Exception.class, () -> userAuditService.insertUserAction(userAudit));
+    assertThrows(InvalidQueryException.class,
+        () -> userAuditService.insertUserAction(userAudit));
   }
 
   @Test
