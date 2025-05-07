@@ -1,8 +1,4 @@
 spring:
   cassandra:
-    contact-points: localhost
-    port: 9042
-    keyspace-name: my_keyspace
-    local-datacenter: datacenter1
     connect-timeout: 60s
     init-query-timeout: 60s

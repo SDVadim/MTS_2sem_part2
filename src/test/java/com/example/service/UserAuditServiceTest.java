@@ -40,10 +40,9 @@ class UserAuditServiceTest {
 
   @DynamicPropertySource
   static void cassandraProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.data.cassandra.contact-points", cassandraContainer::getHost);
-    registry.add("spring.data.cassandra.port", () -> cassandraContainer.getMappedPort(9042));
-    registry.add("spring.data.cassandra.local-datacenter", () -> "datacenter1");
-    registry.add("spring.data.cassandra.keyspace-name", () -> "my_keyspace");
+    registry.add("spring.cassandra.contact-points", () -> cassandraContainer.getHost() + ":" + cassandraContainer.getMappedPort(9042));
+    registry.add("spring.cassandra.local-datacenter", () -> "datacenter1");
+    registry.add("spring.cassandra.keyspace-name", () -> "my_keyspace");
   }
 
   @BeforeEach

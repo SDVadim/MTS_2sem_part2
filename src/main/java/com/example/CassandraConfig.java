@@ -23,6 +23,11 @@ public class CassandraConfig {
         .build();
 
     session.execute("""
+      CREATE KEYSPACE IF NOT EXISTS my_keyspace
+      WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+    """);
+
+    session.execute("""
         CREATE TABLE IF NOT EXISTS my_keyspace.user_audit (
             user_id UUID,
             event_time TIMESTAMP,
