@@ -6,8 +6,11 @@ on:
       - '**'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:dind
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -15,6 +18,5 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
-      - name: Build with Maven
-        run: mvn clean install
+      - name: Build and test
+        run: ./gradlew test

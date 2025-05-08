@@ -16,20 +16,21 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.Instant;
+import java.time.*;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 @Testcontainers
 class UserAuditServiceTest {
 
   @Container
   private static final CassandraContainer<?> cassandraContainer =
-      new CassandraContainer<>("cassandra:4.1") // Используем стабильную версию
+      new CassandraContainer<>("cassandra:4.1")
           .withExposedPorts(9042)
+          .withStartupTimeout(Duration.ofMinutes(3))
           .waitingFor(Wait.forLogMessage(".*Startup complete.*\\n", 1));
 
   @Autowired
