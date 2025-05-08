@@ -1,22 +1,24 @@
-name: Java CI with Maven
+name: Maven Tests with Cassandra
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:dind
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
           distribution: 'temurin'
-      - name: Build and test
-        run: ./gradlew test
+          java-version: '17'
+
+      - name: Run tests
+        run: mvn test
