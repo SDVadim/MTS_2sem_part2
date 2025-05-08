@@ -5,18 +5,16 @@ on:
     branches:
       - '**'
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:dind
-        options: --privileged
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -26,10 +24,23 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Enable Docker daemon
+      - name: Start Docker service
         run: |
           sudo systemctl start docker
+          docker version
           docker info
 
+      - name: Set Testcontainers environment variables
+        run: |
+          echo "TESTCONTAINERS_RYUK_DISABLED=true" >> $GITHUB_ENV
+          echo "DOCKER_HOST=unix:///var/run/docker.sock" >> $GITHUB_ENV
+
       - name: Build and test with Maven
-        run: mvn clean install
+        run: mvn clean install -Dorg.testcontainers.disableRyuk=true
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
