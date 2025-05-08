@@ -1,0 +1,7 @@
+spring:
+  data:
+    cassandra:
+      connect-timeout: 60s
+      read-timeout: 60s
+      keyspace-name: my_keyspace
+      local-datacenter: datacenter1
