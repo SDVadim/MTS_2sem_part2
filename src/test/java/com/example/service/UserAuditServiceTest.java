@@ -52,12 +52,16 @@ class UserAuditServiceTest {
         CREATE KEYSPACE IF NOT EXISTS my_keyspace
         WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
     """);
-    session.execute("TRUNCATE my_keyspace.user_audit");
-  }
-
-  @BeforeEach
-  void clearData() {
-    session.execute("TRUNCATE my_keyspace.user_audit");
+    session.execute("""
+        CREATE TABLE IF NOT EXISTS my_keyspace.user_audit (
+            user_id UUID,
+            event_time TIMESTAMP,
+            event_type TEXT,
+            event_details TEXT,
+            PRIMARY KEY ((user_id), event_time)
+        ) WITH CLUSTERING ORDER BY (event_time DESC)
+           AND default_time_to_live = 31536000;
+    """);
   }
 
   @Test
