@@ -14,30 +14,38 @@ import java.util.Map;
 @Configuration
 public class CassandraConfig {
 
+  private static final String KEYSPACE = "my_keyspace";
+  private static final String DATACENTER = "datacenter1";
+
   @Bean
-  public CqlSession cqlSession() {
-    InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 9042);
-    CqlSession session = CqlSession.builder()
-        .addContactPoint(address)
-        .withLocalDatacenter("datacenter1")
+  public CqlSession cqlSession(CqlSessionBuilder builder) {
+    InetSocketAddress contactPoint = InetSocketAddress.createUnresolved("localhost", 9042);
+
+    CqlSession session = builder
+        .addContactPoint(contactPoint)
+        .withLocalDatacenter(DATACENTER)
         .build();
 
-    session.execute("""
-      CREATE KEYSPACE IF NOT EXISTS my_keyspace
-      WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
-    """);
-
-    session.execute("""
-        CREATE TABLE IF NOT EXISTS my_keyspace.user_audit (
-            user_id UUID,
-            event_time TIMESTAMP,
-            event_type TEXT,
-            event_details TEXT,
-            PRIMARY KEY ((user_id), event_time)
-        ) WITH CLUSTERING ORDER BY (event_time DESC)
-           AND default_time_to_live = 31536000;
-    """);
-
+    initializeKeyspaceAndTable(session);
     return session;
+  }
+
+  private void initializeKeyspaceAndTable(CqlSession session) {
+    SimpleStatement createKeyspace = SchemaBuilder.createKeyspace(CqlIdentifier.fromCql(KEYSPACE))
+        .ifNotExists()
+        .withNetworkTopologyStrategy(Map.of(DATACENTER, 1))
+        .build();
+    session.execute(createKeyspace);
+
+    session.execute("""
+            CREATE TABLE IF NOT EXISTS %s.user_audit (
+                user_id UUID,
+                event_time TIMESTAMP,
+                event_type TEXT,
+                event_details TEXT,
+                PRIMARY KEY ((user_id), event_time)
+            ) WITH CLUSTERING ORDER BY (event_time DESC)
+               AND default_time_to_live = 31536000;
+        """.formatted(KEYSPACE));
   }
 }
