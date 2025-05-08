@@ -15,5 +15,6 @@ public class CassandraDriverConfigLoaderBuilderCustomizer implements DriverConfi
     programmaticDriverConfigLoaderBuilder
         .withDuration(DefaultDriverOption.REQUEST_TIMEOUT, Duration.ofSeconds(60))
         .withDuration(DefaultDriverOption.CONNECTION_CONNECT_TIMEOUT, Duration.ofSeconds(60))
-        .withDuration(DefaultDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(60));  }
+        .withDuration(DefaultDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofSeconds(60));
+  }
 }

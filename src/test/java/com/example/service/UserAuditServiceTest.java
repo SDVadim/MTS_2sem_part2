@@ -41,9 +41,18 @@ class UserAuditServiceTest {
 
   @DynamicPropertySource
   static void cassandraProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.cassandra.contact-points", () -> cassandraContainer.getHost() + ":" + cassandraContainer.getMappedPort(9042));
-    registry.add("spring.cassandra.local-datacenter", () -> "datacenter1");
-    registry.add("spring.cassandra.keyspace-name", () -> "my_keyspace");
+    registry.add("spring.data.cassandra.contact-points", () -> cassandraContainer.getHost() + ":" + cassandraContainer.getMappedPort(9042));
+    registry.add("spring.data.cassandra.local-datacenter", () -> "datacenter1");
+    registry.add("spring.data.cassandra.keyspace-name", () -> "my_keyspace");
+  }
+
+  @BeforeEach
+  void setupKeyspace() {
+    session.execute("""
+        CREATE KEYSPACE IF NOT EXISTS my_keyspace
+        WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+    """);
+    session.execute("TRUNCATE my_keyspace.user_audit");
   }
 
   @BeforeEach
@@ -54,9 +63,9 @@ class UserAuditServiceTest {
   @Test
   void testInsertUserActionPositive() {
     UserAudit userAudit = UserAudit.builder()
-        .id(UUID.randomUUID())
+        .userId(UUID.randomUUID())
         .eventTime(Instant.now())
-        .action(Action.INSERT.name())
+        .eventType(Action.INSERT.name())
         .eventDetails("Test insert action")
         .build();
 
@@ -66,9 +75,9 @@ class UserAuditServiceTest {
   @Test
   void testInsertUserActionNegative() {
     UserAudit userAudit = UserAudit.builder()
-        .id(null)
+        .userId(null)
         .eventTime(Instant.now())
-        .action(Action.INSERT.name())
+        .eventType(Action.INSERT.name())
         .eventDetails("Test insert action")
         .build();
 
@@ -80,9 +89,9 @@ class UserAuditServiceTest {
   void testGetUserAuditsPositive() {
     UUID userId = UUID.randomUUID();
     UserAudit userAudit = UserAudit.builder()
-        .id(userId)
+        .userId(userId)
         .eventTime(Instant.now())
-        .action(Action.SELECT.name())
+        .eventType(Action.SELECT.name())
         .eventDetails("Test select action")
         .build();
 
@@ -90,7 +99,7 @@ class UserAuditServiceTest {
 
     List<UserAudit> audits = userAuditService.getUserAudits(userId);
     assertFalse(audits.isEmpty());
-    assertEquals(userId, audits.get(0).getId());
+    assertEquals(userId, audits.get(0).getUserId());
   }
 
   @Test

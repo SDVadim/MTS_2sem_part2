@@ -1,4 +1,5 @@
 spring:
-  cassandra:
-    connect-timeout: 60s
-    init-query-timeout: 60s
+  data:
+    cassandra:
+      connect-timeout: 60s
+      read-timeout: 60s

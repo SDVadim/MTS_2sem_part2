@@ -2,12 +2,12 @@ package com.example.service;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.*;
-import com.example.entity.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.autoconfigure.security.*;
-import org.springframework.stereotype.*;
+import com.example.entity.UserAudit;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserAuditService {
@@ -22,30 +22,27 @@ public class UserAuditService {
     );
 
     BoundStatement boundStatement = preparedStatement.bind(
-        userAudit.getId(),
+        userAudit.getUserId(),
         userAudit.getEventTime(),
-        userAudit.getAction(),
+        userAudit.getEventType(),
         userAudit.getEventDetails()
     );
 
     session.execute(boundStatement);
   }
 
-
-  public List<UserAudit> getUserAudits(UUID id) {
+  public List<UserAudit> getUserAudits(UUID userId) {
     PreparedStatement preparedStatement = session.prepare(
-        """
-            SELECT * FROM my_keyspace.user_audit WHERE user_id = ?
-            """
+        "SELECT * FROM my_keyspace.user_audit WHERE user_id = ?"
     );
-    BoundStatement boundStatement = preparedStatement.bind(id);
+    BoundStatement boundStatement = preparedStatement.bind(userId);
 
     ResultSet resultSet = session.execute(boundStatement);
     return resultSet.all().stream()
         .map(row -> UserAudit.builder()
-            .id(row.getUuid("user_id"))
+            .userId(row.getUuid("user_id"))
             .eventTime(row.getInstant("event_time"))
-            .action(Action.valueOf(row.getString("event_type")).name())
+            .eventType(row.getString("event_type"))
             .eventDetails(row.getString("event_details"))
             .build())
         .toList();
