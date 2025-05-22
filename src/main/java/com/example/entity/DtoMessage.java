@@ -13,7 +13,7 @@ import java.util.UUID;
 @EqualsAndHashCode
 @JsonDeserialize(builder = DtoMessage.UserAuditBuilder.class)
 public class DtoMessage {
-  private UUID userId;
+  private Long userId;
   private Instant eventTime;
   private String eventType;
   private String eventDetails;

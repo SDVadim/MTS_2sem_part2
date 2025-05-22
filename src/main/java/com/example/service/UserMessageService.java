@@ -49,12 +49,12 @@ public class UserMessageService {
     session.execute(boundStatement);
   }
 
-  public List<DtoMessage> getUserAudits(UUID userId) {
+  public List<DtoMessage> getUserAudits(Long userId) {
     BoundStatement boundStatement = selectPreparedStatement.bind(userId);
     ResultSet resultSet = session.execute(boundStatement);
     return resultSet.all().stream()
         .map(row -> DtoMessage.builder()
-            .userId(row.getUuid("user_id"))
+            .userId(userId)
             .eventTime(row.getInstant("event_time"))
             .eventType(row.getString("event_type"))
             .eventDetails(row.getString("event_details"))

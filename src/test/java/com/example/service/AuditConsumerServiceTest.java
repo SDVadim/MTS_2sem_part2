@@ -68,7 +68,7 @@
 //  @Test
 //  void shouldSendMessageToKafkaSuccessfully() throws JsonProcessingException, InterruptedException, ExecutionException {
 //    DtoMessage message = DtoMessage.builder()
-//        .userId(UUID.randomUUID())
+//        .userId(1L)
 //        .eventTime(Instant.now())
 //        .eventType(Action.INSERT.name())
 //        .eventDetails("Пустота")
@@ -85,7 +85,7 @@
 //  @Test
 //  void shouldNotSendMessageToNonExistentTopic() throws JsonProcessingException, InterruptedException, ExecutionException {
 //    DtoMessage message = DtoMessage.builder()
-//        .userId(UUID.randomUUID())
+//        .userId(1L)
 //        .eventTime(Instant.now())
 //        .eventType(Action.INSERT.name())
 //        .eventDetails("Пустота")
