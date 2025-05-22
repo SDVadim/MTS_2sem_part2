@@ -24,7 +24,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Включаем поддержку Testcontainers
       - name: Enable Docker daemon for Testcontainers
         uses: testcontainers/testcontainers-gh-action@v1
 
