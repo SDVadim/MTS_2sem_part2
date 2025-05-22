@@ -1,13 +1,12 @@
 version: '3.9'
 
 services:
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - kafka-network
 
   kafka:
     image: confluentinc/cp-kafka:7.0.1
@@ -25,34 +24,4 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_MS: 100000
       KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 5000
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-    networks:
-      - kafka-network
-
-  cassandra:
-    image: cassandra:4.1
-    ports:
-      - '9042:9042'
-    environment:
-      CASSANDRA_CLUSTER_NAME: 'Test Cluster'
-      CASSANDRA_DC: 'datacenter1'
-      CASSANDRA_RACK: 'rack1'
-      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
-      JVM_OPTS: '-Xms1G -Xmx1G'  # Настройки памяти для JVM
-    volumes:
-      - cassandra-data:/var/lib/cassandra
-    healthcheck:
-      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES'"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-    networks:
-      - kafka-network
-
-networks:
-  kafka-network:
-    driver: bridge
-
-volumes:
-  cassandra-data:
-    driver: local
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
